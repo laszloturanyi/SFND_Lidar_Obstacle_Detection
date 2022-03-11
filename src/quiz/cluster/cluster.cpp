@@ -17,8 +17,10 @@ pcl::visualization::PCLVisualizer::Ptr initScene(Box window, int zoom)
   	viewer->initCameraParameters();
   	viewer->setCameraPosition(0, 0, zoom, 0, 1, 0);
   	viewer->addCoordinateSystem (1.0);
-
+    float xdiff = (window.x_max-window.x_min) / 200;
+    float ydiff = (window.y_max-window.y_min) / 200;
   	viewer->addCube(window.x_min, window.x_max, window.y_min, window.y_max, 0, 0, 1, 1, 1, "window");
+  	viewer->addCube(window.x_min+xdiff, window.x_max-xdiff, window.y_min+ydiff, window.y_max-ydiff, 0, 0, 0, 0, 0, "window_black");
   	return viewer;
 }
 
@@ -74,6 +76,19 @@ void render2DTree(Node* node, pcl::visualization::PCLVisualizer::Ptr& viewer, Bo
 	}
 
 }
+void proximity(const std::vector<std::vector<float>>& points, const int& idx, std::vector<int>& cluster, std::vector<bool>& point_processed, KdTree* tree, const float& distanceTol)
+{
+    point_processed[idx]=true;
+    cluster.push_back(idx);
+    std::vector<int> nearby_points = tree->search(points[idx], distanceTol);
+    for (int nearby_idx : nearby_points)
+    {
+        if(!point_processed[nearby_idx])
+        {
+            proximity(points, nearby_idx, cluster, point_processed, tree, distanceTol);
+        }
+    }
+}
 
 std::vector<std::vector<int>> euclideanCluster(const std::vector<std::vector<float>>& points, KdTree* tree, float distanceTol)
 {
@@ -81,7 +96,19 @@ std::vector<std::vector<int>> euclideanCluster(const std::vector<std::vector<flo
 	// TODO: Fill out this function to return list of indices for each cluster
 
 	std::vector<std::vector<int>> clusters;
- 
+
+    //This vector will store if a point is processed
+    std::vector<bool> point_processed(points.size(), false);
+
+    for(int i = 0; i < points.size(); i++)
+    {
+        if(!point_processed[i])
+        {
+            std::vector<int> new_cluster;
+            proximity(points, i, new_cluster, point_processed, tree, distanceTol);
+            clusters.push_back(new_cluster);
+        }
+    }
 	return clusters;
 
 }

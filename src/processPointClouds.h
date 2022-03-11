@@ -12,6 +12,7 @@
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl/common/transforms.h>
+#include <boost/filesystem.hpp>
 #include <iostream> 
 #include <string>  
 #include <vector>
@@ -45,6 +46,7 @@ public:
     typename pcl::PointCloud<PointT>::Ptr loadPcd(std::string file);
 
     std::vector<boost::filesystem::path> streamPcd(std::string dataPath);
+
   
 };
 #endif /* PROCESSPOINTCLOUDS_H_ */
